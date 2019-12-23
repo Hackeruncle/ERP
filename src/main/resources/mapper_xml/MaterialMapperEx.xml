@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruozedata.erp.datasource.mappers.MaterialMapperEx">
+    <resultMap extends="com.ruozedata.erp.datasource.mappers.MaterialMapper.BaseResultMap" id="ResultMapList" type="com.ruozedata.erp.datasource.entities.MaterialVo4Unit">
+        <result column="unitName" jdbcType="VARCHAR" property="unitName" />
+        <result column="categoryName" jdbcType="VARCHAR" property="categoryName" />
+    </resultMap>
+
+    <resultMap extends="com.ruozedata.erp.datasource.mappers.MaterialMapper.BaseResultMap" id="ResultAndUnitMap" type="com.ruozedata.erp.datasource.entities.MaterialVo4Unit">
+        <result column="UName" jdbcType="VARCHAR" property="unitName" />
+    </resultMap>
+
+    <select id="selectByConditionMaterial" parameterType="com.ruozedata.erp.datasource.entities.MaterialExample" resultMap="ResultMapList">
+        select m.*,u.uname unitName, mc.name categoryName
+        FROM ruozedata_material m
+        left JOIN ruozedata_unit u on m.UnitId = u.id and ifnull(u.delete_Flag,'0') !='1'
+        left JOIN ruozedata_materialcategory mc on m.CategoryId = mc.id and ifnull(mc.status,'0') !='2'
+        where 1=1
+        <if test="name != null">
+            and m.name like '%${name}%'
+        </if>
+        <if test="model != null">
+            and m.model like '%${model}%'
+        </if>
+        <if test="categoryIds != null">
+            and m.CategoryId in (${categoryIds})
+        </if>
+        and ifnull(m.delete_Flag,'0') !='1'
+        order by m.id desc
+        <if test="offset != null and rows != null">
+            limit #{offset},#{rows}
+        </if>
+    </select>
+
+    <select id="countsByMaterial" resultType="java.lang.Long">
+        SELECT
+        COUNT(m.id)
+        FROM ruozedata_material m
+        left JOIN ruozedata_unit u on m.UnitId = u.id and ifnull(u.delete_Flag,'0') !='1'
+        left JOIN ruozedata_materialcategory mc on m.CategoryId = mc.id and ifnull(mc.status,'0') !='2'
+        WHERE 1=1
+        <if test="name != null">
+            and m.name like '%${name}%'
+        </if>
+        <if test="model != null">
+            and m.model like '%${model}%'
+        </if>
+        <if test="categoryIds != null">
+            and m.CategoryId in (${categoryIds})
+        </if>
+        and ifnull(m.delete_Flag,'0') !='1'
+    </select>
+
+    <select id="findUnitName" resultType="java.lang.String">
+        select u.UName  from ruozedata_unit u
+        left join ruozedata_material m on m.UnitId=u.id and ifnull(m.delete_Flag,'0') !='1'
+        where m.id = ${mId}
+        and ifnull(u.delete_Flag,'0') !='1'
+    </select>
+
+    <select id="findById" parameterType="com.ruozedata.erp.datasource.entities.MaterialExample" resultMap="ResultAndUnitMap">
+        select m.*,u.UName from ruozedata_material m
+        left join ruozedata_unit u on m.UnitId=u.id and ifnull(u.delete_Flag,'0') !='1'
+        where m.id = ${id}
+        and ifnull(m.delete_Flag,'0') !='1'
+    </select>
+
+    <select id="findBySelect" parameterType="com.ruozedata.erp.datasource.entities.MaterialExample" resultMap="ResultAndUnitMap">
+        select m.*,u.UName from ruozedata_material m
+        left join ruozedata_unit u on m.UnitId=u.id and ifnull(u.delete_Flag,'0') !='1'
+        where m.enabled=1
+        and ifnull(m.delete_Flag,'0') !='1'
+        ORDER BY Id desc
+    </select>
+
+    <update id="updatePriceNullByPrimaryKey" parameterType="java.lang.Long">
+        update ruozedata_material
+        set
+        RetailPrice = null,
+        LowPrice = null,
+        PresetPriceOne = null,
+        PresetPriceTwo = null
+        where Id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateUnitIdNullByPrimaryKey" parameterType="java.lang.Long">
+        update ruozedata_material
+        set
+        UnitId = null
+        where Id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="findByAll" parameterType="com.ruozedata.erp.datasource.entities.MaterialExample" resultMap="ResultMapList">
+        select m.*,u.uname unitName, mc.name categoryName
+        FROM ruozedata_material m
+        left JOIN ruozedata_unit u on m.UnitId = u.id and ifnull(u.delete_Flag,'0') !='1'
+        left JOIN ruozedata_materialcategory mc on m.CategoryId = mc.id and ifnull(mc.status,'0') !='2'
+        where 1=1
+        <if test="name != null">
+            and m.name like '%${name}%'
+        </if>
+        <if test="model != null">
+            and m.model like '%${model}%'
+        </if>
+        <if test="categoryIds != null">
+            and m.CategoryId in (${categoryIds})
+        </if>
+        and ifnull(m.delete_Flag,'0') !='1'
+        order by m.id desc
+    </select>
+    <select id="findByMaterialName"  resultType="com.ruozedata.erp.datasource.entities.Material">
+        select m.*
+        FROM ruozedata_material m
+        where 1=1
+        <if test="name != null">
+            and m.name =#{name}
+        </if>
+        and ifnull(m.delete_Flag,'0') !='1'
+
+    </select>
+    <select id="getMaterialEnableSerialNumberList" parameterType="java.util.Map" resultMap="com.ruozedata.erp.datasource.mappers.MaterialMapper.BaseResultMap">
+        select
+        Id, CategoryId, name, Mfrs, Packing, SafetyStock, Model, Standard, Color, Unit, Remark,
+        RetailPrice, LowPrice, PresetPriceOne, PresetPriceTwo, UnitId, FirstOutUnit, FirstInUnit,
+        PriceStrategy, Enabled,enableSerialNumber
+        FROM ruozedata_material
+        where 1=1
+        and enabled ='1'
+        and enableSerialNumber ='1'
+        <if test="name != null and name != ''">
+            <bind name="name" value="'%' + _parameter.name + '%'" />
+            and name like #{name}
+        </if>
+        <if test="model != null and model != ''">
+            <bind name="model" value="'%' + _parameter.model + '%'" />
+            and model like #{model}
+        </if>
+        and ifnull(delete_Flag,'0') !='1'
+        order by id desc
+    </select>
+    <update id="batchDeleteMaterialByIds">
+        update ruozedata_material
+        set delete_Flag='1'
+        where 1=1
+        and ifnull(delete_Flag,'0') !='1'
+        and id in (
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+    </update>
+    <select id="getMaterialListByCategoryIds"  resultMap="com.ruozedata.erp.datasource.mappers.MaterialMapper.BaseResultMap">
+        select
+        <include refid="com.ruozedata.erp.datasource.mappers.MaterialMapper.Base_Column_List" />
+        from ruozedata_material
+        where 1=1
+        and categoryId in (
+        <foreach collection="categoryIds" item="categoryId" separator=",">
+            #{categoryId}
+        </foreach>
+        )
+        and ifnull(delete_Flag,'0') !='1'
+    </select>
+    <select id="getMaterialListByUnitIds"  resultMap="com.ruozedata.erp.datasource.mappers.MaterialMapper.BaseResultMap">
+        select
+        <include refid="com.ruozedata.erp.datasource.mappers.MaterialMapper.Base_Column_List" />
+        from ruozedata_material
+        where 1=1
+        and unitId in (
+        <foreach collection="unitIds" item="unitId" separator=",">
+            #{unitId}
+        </foreach>
+        )
+        and ifnull(delete_Flag,'0') !='1'
+    </select>
+
+    <insert id="insertSelectiveEx" parameterType="com.ruozedata.erp.datasource.entities.Material"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into ruozedata_material
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                Id,
+            </if>
+            <if test="categoryid != null">
+                CategoryId,
+            </if>
+            <if test="name != null">
+                Name,
+            </if>
+            <if test="mfrs != null">
+                Mfrs,
+            </if>
+            <if test="packing != null">
+                Packing,
+            </if>
+            <if test="safetystock != null">
+                SafetyStock,
+            </if>
+            <if test="model != null">
+                Model,
+            </if>
+            <if test="standard != null">
+                Standard,
+            </if>
+            <if test="color != null">
+                Color,
+            </if>
+            <if test="unit != null">
+                Unit,
+            </if>
+            <if test="remark != null">
+                Remark,
+            </if>
+            <if test="retailprice != null">
+                RetailPrice,
+            </if>
+            <if test="lowprice != null">
+                LowPrice,
+            </if>
+            <if test="presetpriceone != null">
+                PresetPriceOne,
+            </if>
+            <if test="presetpricetwo != null">
+                PresetPriceTwo,
+            </if>
+            <if test="unitid != null">
+                UnitId,
+            </if>
+            <if test="firstoutunit != null">
+                FirstOutUnit,
+            </if>
+            <if test="firstinunit != null">
+                FirstInUnit,
+            </if>
+            <if test="pricestrategy != null">
+                PriceStrategy,
+            </if>
+            <if test="enabled != null">
+                Enabled,
+            </if>
+            <if test="otherfield1 != null">
+                OtherField1,
+            </if>
+            <if test="otherfield2 != null">
+                OtherField2,
+            </if>
+            <if test="otherfield3 != null">
+                OtherField3,
+            </if>
+            <if test="enableserialnumber != null">
+                enableSerialNumber,
+            </if>
+            <if test="tenantId != null">
+                tenant_id,
+            </if>
+            <if test="deleteFlag != null">
+                delete_Flag,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="categoryid != null">
+                #{categoryid,jdbcType=BIGINT},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="mfrs != null">
+                #{mfrs,jdbcType=VARCHAR},
+            </if>
+            <if test="packing != null">
+                #{packing,jdbcType=DECIMAL},
+            </if>
+            <if test="safetystock != null">
+                #{safetystock,jdbcType=DECIMAL},
+            </if>
+            <if test="model != null">
+                #{model,jdbcType=VARCHAR},
+            </if>
+            <if test="standard != null">
+                #{standard,jdbcType=VARCHAR},
+            </if>
+            <if test="color != null">
+                #{color,jdbcType=VARCHAR},
+            </if>
+            <if test="unit != null">
+                #{unit,jdbcType=VARCHAR},
+            </if>
+            <if test="remark != null">
+                #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="retailprice != null">
+                #{retailprice,jdbcType=DECIMAL},
+            </if>
+            <if test="lowprice != null">
+                #{lowprice,jdbcType=DECIMAL},
+            </if>
+            <if test="presetpriceone != null">
+                #{presetpriceone,jdbcType=DECIMAL},
+            </if>
+            <if test="presetpricetwo != null">
+                #{presetpricetwo,jdbcType=DECIMAL},
+            </if>
+            <if test="unitid != null">
+                #{unitid,jdbcType=BIGINT},
+            </if>
+            <if test="firstoutunit != null">
+                #{firstoutunit,jdbcType=VARCHAR},
+            </if>
+            <if test="firstinunit != null">
+                #{firstinunit,jdbcType=VARCHAR},
+            </if>
+            <if test="pricestrategy != null">
+                #{pricestrategy,jdbcType=VARCHAR},
+            </if>
+            <if test="enabled != null">
+                #{enabled,jdbcType=BIT},
+            </if>
+            <if test="otherfield1 != null">
+                #{otherfield1,jdbcType=VARCHAR},
+            </if>
+            <if test="otherfield2 != null">
+                #{otherfield2,jdbcType=VARCHAR},
+            </if>
+            <if test="otherfield3 != null">
+                #{otherfield3,jdbcType=VARCHAR},
+            </if>
+            <if test="enableserialnumber != null">
+                #{enableserialnumber,jdbcType=VARCHAR},
+            </if>
+            <if test="tenantId != null">
+                #{tenantId,jdbcType=BIGINT},
+            </if>
+            <if test="deleteFlag != null">
+                #{deleteFlag,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+</mapper>

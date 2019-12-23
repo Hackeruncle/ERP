@@ -1,0 +1,26 @@
+package com.ruozedata.erp.datasource.mappers;
+
+import com.ruozedata.erp.datasource.entities.InOutItem;
+import com.ruozedata.erp.datasource.entities.InOutItemExample;
+import com.ruozedata.erp.datasource.entities.InOutItem;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Date;
+import java.util.List;
+
+public interface InOutItemMapperEx {
+
+    List<InOutItem> selectByConditionInOutItem(
+            @Param("name") String name,
+            @Param("type") String type,
+            @Param("remark") String remark,
+            @Param("offset") Integer offset,
+            @Param("rows") Integer rows);
+
+    Long countsByInOutItem(
+            @Param("name") String name,
+            @Param("type") String type,
+            @Param("remark") String remark);
+
+    int batchDeleteInOutItemByIds(@Param("updateTime") Date updateTime, @Param("updater") Long updater, @Param("ids") String ids[]);
+}
